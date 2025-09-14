@@ -42,6 +42,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter(models.User.username == user.username).first():
         raise HTTPException(status_code=400, detail="Username already exists. If you forgot your password, use the 'Forget Password' option.")
+    hashed = auth.get_password_hash(user.password)
+    db_user = models.User(username=user.username, password_hash=hashed)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return {"msg": "User registered"}
+
 @app.post("/forget-password")
 def forget_password(username: str, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.username == username).first()
@@ -50,12 +57,6 @@ def forget_password(username: str, db: Session = Depends(get_db)):
     # Here you would send a password reset email or token
     # For demo, just return a message
     return {"msg": "Password reset instructions sent to your email (feature to be implemented)"}
-    hashed = auth.get_password_hash(user.password)
-    db_user = models.User(username=user.username, password_hash=hashed)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return {"msg": "User registered"}
 
 @app.post("/token")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):

@@ -108,14 +108,28 @@ if st.session_state.token is None:
     if choice == "Login":
         username = st.text_input("👤 Username")
         password = st.text_input("🔒 Password", type="password")
-        if st.button("Login", use_container_width=True):
-            token = login(username, password)
-            if token:
-                st.session_state.token = token
-                st.success("Logged in successfully!")
-                st.experimental_rerun()
-            else:
-                st.error("Invalid login.")
+        col1, col2 = st.columns([2, 2])
+        with col1:
+            if st.button("Login", use_container_width=True):
+                token = login(username, password)
+                if token:
+                    st.session_state.token = token
+                    st.success("Logged in successfully!")
+                    st.experimental_rerun()
+                else:
+                    st.error("Invalid login.")
+        with col2:
+            if st.button("Forget Password", use_container_width=True):
+                resp = requests.post(f"{API_URL}/forget-password", params={"username": username})
+                try:
+                    data = resp.json()
+                except Exception:
+                    st.error("Unable to process request. Please try again.")
+                else:
+                    if resp.ok:
+                        st.success(data.get("msg", "Check your email for reset instructions."))
+                    else:
+                        st.error(data.get("detail", "Unable to process request."))
     elif choice == "Sign Up":
         username = st.text_input("👤 Choose a username")
         password = st.text_input("🔒 Choose a password", type="password")
