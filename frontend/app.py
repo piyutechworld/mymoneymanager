@@ -120,7 +120,7 @@ if st.session_state.token is None:
                     st.error("Invalid login.")
         with col2:
             if st.button("Forget Password", use_container_width=True):
-                resp = requests.post(f"{API_URL}/forget-password", params={"username": username})
+                resp = requests.post(f"{API_URL}/forget-password", json={"username": username})
                 try:
                     data = resp.json()
                 except Exception:

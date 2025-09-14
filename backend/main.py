@@ -50,7 +50,10 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return {"msg": "User registered"}
 
 @app.post("/forget-password")
-def forget_password(username: str, db: Session = Depends(get_db)):
+def forget_password(payload: dict, db: Session = Depends(get_db)):
+    username = payload.get("username")
+    if not username:
+        raise HTTPException(status_code=400, detail="Username required")
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
